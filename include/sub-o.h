@@ -14,27 +14,27 @@
 /*
  * prototypes
  */
-void show_c_wildcard_info_v4 (struct if_info *ifi, char compact_output);
-void show_split_networks_v4 (struct if_info *ifi, u_int32_t splitmask, int v4args,
+void show_c_wildcard_info_v4(struct if_info *ifi, char compact_output);
+void show_split_networks_v4(struct if_info *ifi, u_int32_t splitmask, int v4args,
         struct misc_args m_argv4, char compact_output, char comp_addr);
-int show_networks_v4 (struct if_info *ifi, int count, char compact_output, char comp_addr);
-void print_cf_info_v4 (struct if_info *ifi, char compact_output);
-void print_cf_bitmap_v4 (struct if_info *ifi, char compact_output);
-void print_cidr_info_v4 (struct if_info *ifi, char compact_output);
-void print_cidr_bitmap_v4 (struct if_info *ifi, char compact_output);
-void print_comp_v6 (struct sip_in6_addr addr);
-void print_exp_v4inv6 (struct sip_in6_addr addr);
-void print_comp_v4inv6 (struct sip_in6_addr addr);
-void print_exp_v6 (struct sip_in6_addr addr);
-void print_mixed_v6 (struct sip_in6_addr addr);
-void print_rev_v6 (struct if_info *ifi);
-void print_v6 (struct if_info *ifi, char compact_output);
-void print_v4inv6 (struct if_info *ifi);
-int v6plus (struct sip_in6_addr *a, struct sip_in6_addr *b);
-void show_split_networks_v6 (struct if_info *ifi, struct sip_in6_addr splitmask, int v6args,
+int show_networks_v4(struct if_info *ifi, int count, char compact_output, char comp_addr);
+void print_cf_info_v4(struct if_info *ifi, char compact_output);
+void print_cf_bitmap_v4(struct if_info *ifi, char compact_output);
+void print_cidr_info_v4(struct if_info *ifi, char compact_output);
+void print_cidr_bitmap_v4(struct if_info *ifi, char compact_output);
+void print_comp_v6(struct sip_in6_addr addr);
+void print_exp_v4inv6(struct sip_in6_addr addr);
+void print_comp_v4inv6(struct sip_in6_addr addr);
+void print_exp_v6(struct sip_in6_addr addr);
+void print_mixed_v6(struct sip_in6_addr addr);
+void print_rev_v6(struct if_info *ifi);
+void print_v6(struct if_info *ifi, char compact_output);
+void print_v4inv6(struct if_info *ifi);
+int v6plus(struct sip_in6_addr *a, struct sip_in6_addr *b);
+void show_split_networks_v6(struct if_info *ifi, struct sip_in6_addr splitmask, int v6args,
         struct misc_args m_argv6, char compact_output, char comp_addr);
-void print_short_help ();
-void print_help ();
-void print_version ();
+void print_short_help();
+void print_help();
+void print_version();
 
 #endif				/* SUB_O_H */

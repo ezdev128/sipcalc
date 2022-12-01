@@ -1,6 +1,6 @@
 AC_INIT(include/sub.h)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(sipcalc,1.1.6)
+AM_INIT_AUTOMAKE(sipcalc,1.1.7)
 AC_PROG_CC
 AC_PROG_INSTALL
 
