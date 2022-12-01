@@ -57,24 +57,30 @@ int resolve;
 
 int
 out_cmdline (struct if_info *ifarg_cur, int v4args, struct misc_args m_argv4,
-	     int v6args, struct misc_args m_argv6, int recurse, int index)
+	     int v6args, struct misc_args m_argv6, char compact_output, char comp_addr, int recurse, int index)
 {
 	int ret;
 
 	ret = 0;
 
 	if (ifarg_cur->type == IFT_V4) {
-		printf ("-[ipv4 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        if (!compact_output) {
+            printf ("-[ipv4 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        }
 		ret = get_addrv4 (ifarg_cur);
 	}
 
 	if (ifarg_cur->type == IFT_V6) {
-		printf ("-[ipv6 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        if (!compact_output) {
+            printf("-[ipv6 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        }
 		ret = get_addrv6 (ifarg_cur);
 	}
 
 	if (ifarg_cur->type == IFT_INTV4 || ifarg_cur->type == IFT_INTV6) {
-		printf ("-[int-ipv4 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        if (!compact_output) {
+            printf ("-[int-ipv4 : %s] - %d\n", ifarg_cur->cmdstr, index);
+        }
 		if (ifarg_cur->errorstr[0] != '\0') {
 			printf ("\n-[ERR : %s]\n\n-\n", ifarg_cur->errorstr);
 			return 0;
@@ -102,38 +108,46 @@ out_cmdline (struct if_info *ifarg_cur, int v4args, struct misc_args m_argv4,
 		if (!v4args)
 			v4args = CIDR_INFO;
 
-		printf ("\n");
+        if (!compact_output) {
+            printf ("\n");
+        }
 		if ((v4args & CF_INFO) == CF_INFO)
-			print_cf_info_v4 (ifarg_cur);
+			print_cf_info_v4 (ifarg_cur, compact_output);
 		if ((v4args & CIDR_INFO) == CIDR_INFO)
-			print_cidr_info_v4 (ifarg_cur);
+			print_cidr_info_v4 (ifarg_cur, compact_output);
 		if ((v4args & CF_BITMAP) == CF_BITMAP)
-			print_cf_bitmap_v4 (ifarg_cur);
+			print_cf_bitmap_v4 (ifarg_cur, compact_output);
 		if ((v4args & CIDR_BITMAP) == CIDR_BITMAP)
-			print_cidr_bitmap_v4 (ifarg_cur);
+			print_cidr_bitmap_v4 (ifarg_cur, compact_output);
 		if ((v4args & NET_INFO) == NET_INFO)
-			show_networks_v4 (ifarg_cur, m_argv4.numnets);
+			show_networks_v4 (ifarg_cur, m_argv4.numnets, compact_output, comp_addr);
 		if ((v4args & V4SPLIT) == V4SPLIT)
-			show_split_networks_v4 (ifarg_cur, m_argv4.splitmask, v4args, m_argv4);
+			show_split_networks_v4 (ifarg_cur, m_argv4.splitmask, v4args, m_argv4, compact_output, comp_addr);
 		if ((v4args & C_WILDCARD) == C_WILDCARD)
-			show_c_wildcard_info_v4 (ifarg_cur);
-		printf ("-\n");
+			show_c_wildcard_info_v4 (ifarg_cur, compact_output);
+        if (!compact_output) {
+            printf ("-\n");
+        }
 	}
 
 	if (ifarg_cur->type == IFT_V6 || ifarg_cur->type == IFT_INTV6) {
 		if (!v6args)
 			v6args = V6_INFO;
 
-		printf ("\n");
+        if (!compact_output) {
+            printf ("\n");
+        }
 		if ((v6args & V6_INFO) == V6_INFO)
-			print_v6 (ifarg_cur);
+			print_v6 (ifarg_cur, compact_output);
 		if ((v6args & V4INV6) == V4INV6)
 			print_v4inv6 (ifarg_cur);
 		if ((v6args & V6REV) == V6REV)
 			print_rev_v6 (ifarg_cur);
 		if ((v6args & V6SPLIT) == V6SPLIT)
-			show_split_networks_v6 (ifarg_cur, m_argv6.v6splitmask, v6args, m_argv6);
-		printf ("-\n");
+			show_split_networks_v6 (ifarg_cur, m_argv6.v6splitmask, v6args, m_argv6, compact_output, comp_addr);
+        if (!compact_output) {
+            printf ("-\n");
+        }
 	}
 
 	return 0;
@@ -676,6 +690,9 @@ main (int argc, char *argv[])
 	char oldcmdstr[128];
 	struct argbox *abox_start, *abox_cur, *abox_tmp;
 	char *stdinarg[3];
+    char compact_output;
+    char comp_addr;
+
 #ifdef HAVE_GETOPT_LONG
 	static struct option l_o[] = {
 		{"all", no_argument, 0, 'a'},
@@ -697,6 +714,8 @@ main (int argc, char *argv[])
 		{"split-verbose", no_argument, 0, 'u'},
 		{"resolve", no_argument, 0, 'd'},
 		{"wildcard", no_argument, 0, 'w'},
+		{"compact-output", no_argument, 0, 'C'},
+		{"compressed-addresses", no_argument, 0, 'o'},
 		{0, 0, 0, 0}
 	};
 #endif
@@ -718,6 +737,8 @@ main (int argc, char *argv[])
 	ifarg_start = NULL;
 	ifarg_old = NULL;
 	resolve = 0;
+    compact_output = 0;
+    comp_addr = 0;
 
 	/*
 	 * abox == argument box == a box that holds (commandline) arguments :)
@@ -847,6 +868,15 @@ main (int argc, char *argv[])
 			abox_cur = new_arg (abox_cur);
 
 			break;
+
+        case 'C':
+            compact_output = 1;
+            break;
+
+        case 'o':
+            comp_addr = 1;
+            break;
+
 		default:
 			print_short_help ();
 			return 0;
@@ -946,7 +976,7 @@ main (int argc, char *argv[])
 		else {
 			index = 0;
 		}
-		iffound += out_cmdline (ifarg_cur, v4args, m_argv4, v6args, m_argv6, 0, index);
+		iffound += out_cmdline (ifarg_cur, v4args, m_argv4, v6args, m_argv6, compact_output, comp_addr, 0, index);
 		safe_strncpy (oldcmdstr, ifarg_cur->cmdstr);
 		ifarg_cur = ifarg_cur->next;
 	}
@@ -1001,7 +1031,7 @@ main (int argc, char *argv[])
 					else {
 						index = 0;
 					}
-					iffound += out_cmdline (ifarg_cur, v4args, m_argv4, v6args, m_argv6, 0, index);
+					iffound += out_cmdline (ifarg_cur, v4args, m_argv4, v6args, m_argv6, compact_output, comp_addr, 0, index);
 					safe_strncpy (oldcmdstr, ifarg_cur->cmdstr);
 					ifarg_cur = ifarg_cur->next;
 				}

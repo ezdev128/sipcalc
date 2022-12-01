@@ -41,7 +41,7 @@ static const char rcsid[] = "$Id: sub-output.c,v 1.32 2003/03/19 12:33:56 simius
 #include "sub.h"
 
 void
-show_c_wildcard_info_v4 (struct if_info *ifi)
+show_c_wildcard_info_v4 (struct if_info *ifi, char compact_output)
 {
 	u_int32_t mask;
 	int bitcount;
@@ -96,7 +96,8 @@ show_c_wildcard_info_v4 (struct if_info *ifi)
 
 
 void
-show_split_networks_v4 (struct if_info *ifi, u_int32_t splitmask, int v4args, struct misc_args m_argv4)
+show_split_networks_v4 (struct if_info *ifi, u_int32_t splitmask, int v4args, struct misc_args m_argv4,
+        char compact_output, char comp_addr)
 {
 	u_int32_t diff, start, end;
 	int x;
@@ -147,7 +148,7 @@ show_split_networks_v4 (struct if_info *ifi, u_int32_t splitmask, int v4args, st
 		end += diff;
 
 		if ((v4args & V4VERBSPLIT) == V4VERBSPLIT)
-			out_cmdline (&ifi_tmp, v4args_tmp, m_argv4, 0, m_argv4, 1, 0);
+			out_cmdline (&ifi_tmp, v4args_tmp, m_argv4, 0, m_argv4, compact_output, comp_addr, 1, 0);
 	}
 
 	printf ("\n");
@@ -156,7 +157,7 @@ show_split_networks_v4 (struct if_info *ifi, u_int32_t splitmask, int v4args, st
 }
 
 int
-show_networks_v4 (struct if_info *ifi, int count)
+show_networks_v4 (struct if_info *ifi, int count, char compact_output, char comp_addr)
 {
 	u_int32_t diff, start, end;
 	int x;
@@ -196,7 +197,7 @@ show_networks_v4 (struct if_info *ifi, int count)
 }
 
 void
-print_cf_info_v4 (struct if_info *ifi)
+print_cf_info_v4 (struct if_info *ifi, char compact_output)
 {
 	printf ("[Classful]\n");
 	printf ("Host address		- %s\n", numtoquad (ifi->v4ad.n_haddr));
@@ -218,7 +219,7 @@ print_cf_info_v4 (struct if_info *ifi)
 }
 
 void
-print_cf_bitmap_v4 (struct if_info *ifi)
+print_cf_bitmap_v4 (struct if_info *ifi, char compact_output)
 {
 	printf ("[Classful bitmaps]\n");
 	printf ("Network address		- %s\n",
@@ -231,7 +232,7 @@ print_cf_bitmap_v4 (struct if_info *ifi)
 }
 
 void
-print_cidr_info_v4 (struct if_info *ifi)
+print_cidr_info_v4 (struct if_info *ifi, char compact_output)
 {
 	printf ("[CIDR]\n");
 	printf ("Host address		- %s\n", numtoquad (ifi->v4ad.n_haddr));
@@ -265,7 +266,7 @@ print_cidr_info_v4 (struct if_info *ifi)
 }
 
 void
-print_cidr_bitmap_v4 (struct if_info *ifi)
+print_cidr_bitmap_v4 (struct if_info *ifi, char compact_output)
 {
 	printf ("[CIDR bitmaps]\n");
 	printf ("Host address		- %s\n",
@@ -278,15 +279,27 @@ print_cidr_bitmap_v4 (struct if_info *ifi)
 		numtobitmap (ifi->v4ad.n_broadcast));
 	printf ("Cisco wildcard		- %s\n",
 		numtobitmap (ifi->v4ad.n_nmask ^ 0xffffffff));
-	printf ("Network range		- %s -\n",
-		numtobitmap (ifi->v4ad.n_naddr));
-	printf ("			  %s\n",
-		numtobitmap (ifi->v4ad.n_broadcast));
+    if (!compact_output) {
+        printf("Network range		- %s -\n",
+               numtobitmap(ifi->v4ad.n_naddr));
+        printf("			  %s\n",
+               numtobitmap(ifi->v4ad.n_broadcast));
+    } else {
+        printf("Network range		- %s - %s\n",
+               numtobitmap(ifi->v4ad.n_naddr),
+               numtobitmap(ifi->v4ad.n_broadcast));
+    }
 	if (ifi->v4ad.n_naddr + 1 <= ifi->v4ad.n_broadcast - 1) {
-		printf ("Usable range		- %s -\n",
-			numtobitmap (ifi->v4ad.n_naddr + 1));
-		printf ("			  %s\n",
-			numtobitmap (ifi->v4ad.n_broadcast - 1));
+        if (!compact_output) {
+            printf("Usable range		- %s -\n",
+                   numtobitmap(ifi->v4ad.n_naddr + 1));
+            printf("			  %s\n",
+                   numtobitmap(ifi->v4ad.n_broadcast - 1));
+        } else {
+            printf("Usable range		- %s - %s\n",
+                   numtobitmap(ifi->v4ad.n_naddr + 1),
+                   numtobitmap(ifi->v4ad.n_broadcast - 1));
+        }
 	}
 	printf ("\n");
 
@@ -484,9 +497,11 @@ print_rev_v6 (struct if_info *ifi)
 }
 
 void
-print_v6 (struct if_info *ifi)
+print_v6 (struct if_info *ifi, char compact_output)
 {
-	printf ("[IPV6 INFO]\n");
+    if (!compact_output) {
+        printf("[IPV6 INFO]\n");
+    }
 	printf ("Expanded Address	- ");
 	print_exp_v6 (ifi->v6ad.haddr);
 	printf ("\n");
@@ -507,11 +522,15 @@ print_v6 (struct if_info *ifi)
 	if (ifi->v6ad.comment[0])
 		printf ("Comment			- %s\n",
 			ifi->v6ad.comment);
-	printf ("Network range		- ");
-	print_exp_v6 (ifi->v6ad.prefix);
-	printf (" -\n			  ");
-	print_exp_v6 (ifi->v6ad.broadcast);
-	printf ("\n");
+    printf("Network range		- ");
+    print_exp_v6(ifi->v6ad.prefix);
+    if (!compact_output) {
+        printf(" -\n			  ");
+    } else {
+        printf(" - ");
+    }
+    print_exp_v6(ifi->v6ad.broadcast);
+    printf("\n");
 
 	printf ("\n");
 
@@ -581,19 +600,22 @@ v6plus (struct sip_in6_addr *a, struct sip_in6_addr *b)
 }
 
 void
-show_split_networks_v6 (struct if_info *ifi, struct sip_in6_addr splitmask, int v6args, struct misc_args m_argv6)
+show_split_networks_v6 (struct if_info *ifi, struct sip_in6_addr splitmask, int v6args,
+        struct misc_args m_argv6, char compact_output, char comp_addr)
 {
 	struct sip_in6_addr sdiff, ediff, start, end, tmpaddr;
 	int x, y, z;
 	struct if_info ifi_tmp;
 	int v6args_tmp;
 
-	v6args_tmp = 0;
+    v6args_tmp = 0;
 
-	if ((v6args & V6VERBSPLIT) == V6VERBSPLIT)
-		printf ("[Split network - verbose]\n");
-	else
-		printf ("[Split network]\n");
+    if (!compact_output) {
+        if ((v6args & V6VERBSPLIT) == V6VERBSPLIT)
+            printf("[Split network - verbose]\n");
+        else
+            printf("[Split network]\n");
+    }
 
 	x = 0;
 	y = 0;
@@ -634,11 +656,34 @@ show_split_networks_v6 (struct if_info *ifi, struct sip_in6_addr splitmask, int 
 	x = 0;
 	while (!x) {
 		if ((v6args & V6VERBSPLIT) != V6VERBSPLIT) {
-			printf ("Network			- ");
-			print_exp_v6 (start);
-			printf (" -\n\t\t\t  ");
-			print_exp_v6 (end);
-			printf ("\n");
+            if (!compact_output) {
+                printf("Network			- ");
+                if (!comp_addr) {
+                    print_exp_v6(start);
+                } else {
+                    print_comp_v6(start);
+                }
+                printf(" -\n\t\t\t  ");
+                if (!comp_addr) {
+                    print_exp_v6(end);
+                } else {
+                    print_comp_v6(end);
+                }
+                printf("\n");
+            } else {
+                if (!comp_addr) {
+                    print_exp_v6(start);
+                } else {
+                    print_comp_v6(start);
+                }
+                printf(" ");
+                if (!comp_addr) {
+                    print_exp_v6(end);
+                } else {
+                    print_comp_v6(end);
+                }
+                printf("\n");
+            }
 		}
 
 		if ((v6args & V6VERBSPLIT) == V6VERBSPLIT) {
@@ -679,10 +724,12 @@ show_split_networks_v6 (struct if_info *ifi, struct sip_in6_addr splitmask, int 
 		v6plus (&end, &ediff);
 
 		if ((v6args & V6VERBSPLIT) == V6VERBSPLIT)
-			out_cmdline (&ifi_tmp, v6args_tmp, m_argv6, v6args_tmp, m_argv6, 1, 0);
+			out_cmdline (&ifi_tmp, v6args_tmp, m_argv6, v6args_tmp, m_argv6, compact_output, comp_addr, 1, 0);
 	}
 
-	printf ("\n");
+    if (!compact_output) {
+        printf("\n");
+    }
 
 	return;
 }
@@ -708,6 +755,8 @@ print_help ()
 	printf ("  -v, --version\t\t\tVersion information.\n");
 	printf ("  -4, --addr-ipv4=ADDR\t\tAdd an ipv4 address.\n");
 	printf ("  -6, --addr-ipv6=ADDR\t\tAdd an ipv6 address.\n");
+	printf ("  -C, --compact-output\t\tUse compact output.\n");
+	printf ("  -o, --compressed-addresses\tUse compressed addresses.\n");
 	printf ("\n");
 	printf ("IPv4 options:\n");
 	printf ("  -b, --cidr-bitmap\t\tCIDR bitmap.\n");
@@ -718,7 +767,7 @@ print_help ()
 	printf ("\t\t\t\tof MASK size.\n");
 	printf ("  -w, --wildcard\t\tDisplay information for a wildcard\n");
 	printf ("\t\t\t\t(inverse mask).\n");
-	printf ("  -x, --classful-bitmap\tClassful bitmap.\n");
+	printf ("  -x, --classful-bitmap\t\tClassful bitmap.\n");
 	printf ("\n");
 	printf ("IPv6 options:\n");
 	printf ("  -e, --v4inv6\t\t\tIPv4 compatible IPv6 information.\n");
@@ -766,6 +815,8 @@ print_help ()
 	printf ("  -v\t\tVersion information.\n");
 	printf ("  -4\t\tAdd an ipv4 address.\n");
 	printf ("  -6\t\tAdd an ipv6 address.\n");
+    printf ("  -C\t\tUse compact output.\n");
+    printf ("  -o\tUse compressed addresses.\n");
 	printf ("\n");
 	printf ("IPv4 options:\n");
 	printf ("  -b\t\tCIDR bitmap.\n");

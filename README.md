@@ -24,6 +24,8 @@ Features include:
   * The ability to "split" a network based on a smaller netmask, now also with
     recursive runs on the generated subnets.
   * DNS resolution.
+  * Compact output
+  * Compressed addresses
 - IPv6
   * Compressed and expanded input addresses.
   * Compressed and expanded output.
@@ -33,6 +35,8 @@ Features include:
   * The ability to "split" a network based on a smaller netmask, now also with
     recursive runs on the generated subnets.
   * DNS resolution.
+  * Compact output
+  * Compressed addresses
 
 Sipcalc has been tested on the following platforms.
   * OpenBSD 3.0 (i386)
